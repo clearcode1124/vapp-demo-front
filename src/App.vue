@@ -1,7 +1,7 @@
 <template>
   <div id="app">
-    <h1>{{ message }}</h1>
-    <button @click="test">测试</button>
+    <h3>name: {{ name }}</h3>
+    <button @click="getCookies">读取cookies</button>
   </div>
 </template>
 
@@ -10,13 +10,14 @@ export default {
   name: "App",
   data() {
     return {
-      message: "2.0",
-      timeStamp: 0,
-      signature: ""
+      name: ""
     };
   },
+  mounted: function() {
+    this.autoLogin();
+  },
   methods: {
-    test() {
+    autoLogin() {
       let that = this;
       this.$http.get("/api/v1/signs/get-sign").then(
         res => {
@@ -43,45 +44,34 @@ export default {
           });
           this.$dd.userid = 0;
           this.$dd.ready(function() {
-            // alert("已进入ready");
-            // alert(that.$dd.runtime.permission.requestAuthCode);
-            // that.$dd.runtime.info({
-            //   onSuccess: function(info) {
-            //     alert("runtime info: ");
-            //   },
-            //   onFail: function(err) {
-            //     alert("fail: ");
-            //   }
-            // });
             that.$dd.runtime.permission.requestAuthCode({
               corpId: "ding06e35a04569c475d35c2f4657eb6378f", // 企业id
               onSuccess: function(info) {
                 // let code = info.code; // 通过该免登授权码可以获取用户身份
                 // alert(info.code);
-                that.$http.post("/api/v1/auth/login?requestAuthCode=" + info.code).then(res => {
-                  that.message = JSON.stringify(res);
-                });
+                that.$http
+                  .post("/api/v1/auth/login?requestAuthCode=" + info.code)
+                  .then(res => {
+                    // that.name = res.data.name;
+                    that.$cookies.set("username", res.data.name, 60 * 60 * 12);
+                  });
               },
               onFail: function(err) {
-                alert("fail");
+                alert(JSON.stringify(error));
               }
             });
           });
           this.$dd.error(function(error) {
-            /**
-        {
-           errorMessage:"错误信息",// errorMessage 信息会展示出钉钉服务端生成签名使用的参数，请和您生成签名的参数作对比，找出错误的参数
-           errorCode: "错误码"
-        }
-       **/
             alert("dd error: " + JSON.stringify(error));
-            that.message = JSON.stringify(error);
           });
         },
         res => {
           console.info("调用失败");
         }
       );
+    },
+    getCookies() {
+      this.name = this.$cookies.get("username");
     }
   }
 };

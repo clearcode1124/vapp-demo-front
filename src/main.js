@@ -5,10 +5,13 @@ import App from './App'
 import router from './router'
 import * as dd from 'dingtalk-jsapi'
 import axios from 'axios'
+import cookies from 'vue-cookies'
 
 Vue.config.productionTip = false
 Vue.prototype.$dd = dd
 Vue.prototype.$http = axios
+
+Vue.use(cookies)
 
 /* eslint-disable no-new */
 new Vue({
